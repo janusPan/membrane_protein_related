@@ -1,7 +1,10 @@
+#导入需要使用的包
 import requests
 from bs4 import BeautifulSoup
 from lxml import html
 import time
+
+#headers，防止被网站反爬虫机制检测
 base_url = 'https://www.genecards.org'
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36',
@@ -10,7 +13,7 @@ headers = {
 
 
 
-
+#每次访问都获取cookie，也是防止被网站检测
 def get_cookies(url):
     try:
         requests.session()
@@ -19,7 +22,7 @@ def get_cookies(url):
     except:
         cookie = ''
     return cookie
-    
+#用来获取genecards摘要的信息    
 def get_genecards_info(gene_symbol, cookies):
     url = f'https://www.genecards.org/cgi-bin/carddisp.pl?gene={gene_symbol}'
         
@@ -31,52 +34,22 @@ def get_genecards_info(gene_symbol, cookies):
         # 获取基因摘要信息
         summary_section = soup.select_one('#summaries > div > p')
         if summary_section:
-            summary = summary_section.get_text(strip=True)
+            summary = summary_section.get_text(strip=True).replace('\n', ' ').replace('\r', ' ')
         else:
             summary = '未找到基因摘要信息'
 
-        # 使用 lxml 库解析响应文本
-        #tree = html.fromstring(response.content)
 
-        # 获取别名信息
-        #aliases_xpath2 = '/html/body/div[2]/div[2]/div/div/main/div[2]/div/div/section[1]/div[1]/div[1]/div[1]/div[2]/ul/li/span'
-        
-        #aliases_element1 = tree.xpath(aliases_xpath1)
-        #aliases_element2 = tree.xpath(aliases_xpath2)
-
-        #aliases_list = []
-
-        #if aliases_element1:
-        #    aliases_list.extend([alias.text_content().strip() for alias in aliases_element1])
-
-        #if aliases_element2:
-        #    aliases_list.extend([alias.text_content().strip() for alias in aliases_element2])
-
-        #aliases = '; '.join(aliases_list)
-
-        return summary#, aliases
+        return summary
     else:
         print(f'请求失败，无法获取 {gene_symbol} 的信息。')
-        return None, None
+        return None
 
-# 从文件中读取基因符号列表
+# 从文件中读取基因符号列表，每1行有1个gene symbol。
 with open('gene_symbols.txt', 'r') as f:
     gene_symbols = [line.strip() for line in f]
 
-'''with open('genesummary.tsv', 'w') as summary_file, open('genealias.tsv', 'w') as alias_file:
-    summary_file.write("Gene Symbol\tGene Summary\n")
-    alias_file.write("Gene Symbol\tGene Aliases\n")
-    
-    for gene_symbol in gene_symbols:
-        time.sleep(1)
-        cookies=get_cookies(base_url)
-        print(cookies)
-        summary, aliases = get_genecards_info(gene_symbol, cookies)
-        if summary and aliases:
-            summary_file.write(f"{gene_symbol}\t{summary}\n")
-            alias_file.write(f"{gene_symbol}\t{aliases}\n")
-'''
 
+#输出所有结果到，genesummary.tsv文件中，每行第一列为gene symbol，第二列该gene symbol对应的genecard summary信息
 with open('genesummary.tsv', 'w') as summary_file:
     summary_file.write("Gene Symbol\tGene Summary\n")
     
