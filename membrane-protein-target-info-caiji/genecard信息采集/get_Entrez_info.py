@@ -45,12 +45,12 @@ def get_genecards_info(gene_symbol, cookies):
 
 
 # 从文件中读取基因符号列表
-with open('Input/gene_list.txt', 'r') as f:
+with open('gene_list.txt', 'r') as f:
     gene_symbols = [line.strip() for line in f]
 
 
 
-with open('Output/Entrez_genesummary_20230331_V1.tsv', 'w') as summary_file:
+with open('Entrez_genesummary.tsv', 'w') as summary_file:
     summary_file.write("Gene Symbol\tGene Summary\n")
     
     for gene_symbol in gene_symbols:
